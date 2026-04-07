@@ -1,0 +1,35 @@
+name: email-triage-env
+version: "1.0.0"
+description: >
+  An RL environment where an AI agent triages customer emails by classifying
+  urgency, routing to departments, and drafting replies. Based on real-world
+  customer support workflows.
+author: Preeti Toppo
+tags:
+  - openenv
+  - email
+  - customer-support
+  - nlp
+  - real-world
+tasks:
+  - name: classify
+    difficulty: easy
+    description: Classify each email as urgent, normal, or spam.
+  - name: route
+    difficulty: medium
+    description: Classify urgency and route to the correct department.
+  - name: respond
+    difficulty: hard
+    description: Classify, route, and draft a professional reply.
+observation_space:
+  email_id: string
+  subject: string
+  body: string
+  sender: string
+  task: string
+  step: integer
+action_space:
+  label: "urgent | normal | spam"
+  department: "technical | billing | sales | none"
+  reply: string
+reward_range: [0.0, 1.0]
