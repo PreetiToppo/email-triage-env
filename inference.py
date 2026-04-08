@@ -1,5 +1,5 @@
 """
-inference.py — Baseline inference script for EmailTriageEnv
+inference.py — Baseline inference for EmailTriageEnv (4 tasks)
 """
 import json
 import os
@@ -14,17 +14,30 @@ if HF_TOKEN is None:
     raise ValueError("HF_TOKEN environment variable is required")
 
 client = OpenAI(base_url=API_BASE_URL, api_key=HF_TOKEN)
-
 BENCHMARK = "email-triage-env"
 
 
 def ask_llm(task_name: str, obs: dict) -> dict:
-    system_prompt = """You are an expert customer support manager.
-You will receive an email and must respond in JSON only with these fields:
+    if task_name == "escalate":
+        system_prompt = """You are a senior customer support manager.
+Decide if this email needs immediate human escalation.
+Escalate when: security breach, data loss, legal risk, C-level complaint, multiple customers affected, or repeat ignored complaint.
+Do NOT escalate routine billing or tech questions.
+Respond ONLY with valid JSON with fields:
 - label: one of "urgent", "normal", "spam"
 - department: one of "technical", "billing", "sales", "none"
-- reply: a professional reply (empty string if spam)
-Respond ONLY with valid JSON. No explanation."""
+- escalate: "true" or "false"
+- reason: one sentence explaining your escalation decision
+No explanation outside JSON."""
+    else:
+        system_prompt = """You are an expert customer support manager.
+Respond ONLY with valid JSON with these fields:
+- label: one of "urgent", "normal", "spam"
+- department: one of "technical", "billing", "sales", "none"
+- reply: professional reply text (empty string if spam)
+- escalate: "true" or "false"
+- reason: brief reason for escalation decision
+No explanation outside JSON."""
 
     user_prompt = f"""Task: {task_name}
 From: {obs['sender']}
@@ -37,7 +50,7 @@ Body: {obs['body']}"""
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt}
         ],
-        max_tokens=300,
+        max_tokens=400,
         temperature=0.0,
     )
 
@@ -47,7 +60,7 @@ Body: {obs['body']}"""
 
 
 def run_task(task_name: str):
-    env = EmailTriageEnv(task_name=task_name)
+    env = EmailTriageEnv(task_name=task_name, max_emails=10)
     obs = env.reset()
     done = False
     step = 0
@@ -61,7 +74,7 @@ def run_task(task_name: str):
             action = ask_llm(task_name, obs)
             last_error = None
         except Exception as ex:
-            action = {"label": "normal", "department": "none", "reply": ""}
+            action = {"label": "normal", "department": "none", "reply": "", "escalate": "false", "reason": ""}
             last_error = str(ex)[:80]
 
         obs, reward, done, info = env.step(action)
@@ -80,5 +93,5 @@ def run_task(task_name: str):
 
 
 if __name__ == "__main__":
-    for task in ["classify", "route", "respond"]:
+    for task in ["classify", "route", "respond", "escalate"]:
         run_task(task)
