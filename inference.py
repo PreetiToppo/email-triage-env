@@ -87,8 +87,9 @@ def run_task(task_name: str):
         print(f"[STEP] step={step} action={action_str} reward={reward:.2f} done={done_str} error={error_str}")
 
     success = (sum(rewards) / len(rewards)) >= 0.5 if rewards else False
+    score = round(sum(rewards) / len(rewards), 2) if rewards else 0.0
     rewards_str = ",".join(f"{r:.2f}" for r in rewards)
-    print(f"[END] success={str(success).lower()} steps={step} rewards={rewards_str}")
+    print(f"[END] success={str(success).lower()} steps={step} score={score:.2f} rewards={rewards_str}")
     print()
 
 
