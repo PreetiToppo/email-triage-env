@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "email-triage-env"
+version = "2.0.0"
+description = "OpenEnv RL environment for AI agent email triage"
+authors = [
+    {name = "Preeti Toppo", email = "toppopreeti191@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "openai",
+    "pydantic",
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
